@@ -3,18 +3,26 @@ import argparse
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-import datetime
+from datetime import datetime
+import locale
+
+locale.setlocale(locale.LC_TIME, "de_DE.utf8")
 
 parser = argparse.ArgumentParser(description="This script will book you the next available appointment at a Bürgeramt (citizen's office) in Berlin.")
 parser.add_argument("--name", required=True, help="Your name")
 parser.add_argument("--email", required=True, help="Your email address")
+parser.add_argument("--phone", help="Your phone number")
 parser.add_argument("--id", required=True, help="Service ID")
-parser.add_argument("--start_day", type=int, default=datetime.datetime.now().day, help="Start day for booking appointments (default: current day)")
+parser.add_argument("--start_date", default=datetime.now().strftime("%d.%m.%Y"), help="Start day for booking appointments (format: \"DD.MM.YYYY\"), default: current day)")
+parser.add_argument("--end_date", help="End day for booking appointments (format: \"DD.MM.YYYY\")")
 args = parser.parse_args()
 
 your_name = args.name
 your_email = args.email
+your_phone = args.phone
 dienstleistung_id = args.id
+start_date = args.start_date
+end_date = args.end_date
 
 def run_script():
     url = f"https://service.berlin.de/dienstleistung/{dienstleistung_id}/"
@@ -54,17 +62,22 @@ def click_first_link(browser, class_name):
         return True
     except:
         return False
-
-def get_next_available_day(browser, start_day):
+    
+def get_next_available_day(browser, start_date, end_date):
     available_days = browser.find_elements(By.XPATH, "//td[contains(@class, 'buchbar')]//a")
-    today = datetime.datetime.now().day
-
+    start_date = datetime.strptime(start_date, "%d.%m.%Y")
+    
+    if end_date:
+        end_date = datetime.strptime(end_date, "%d.%m.%Y")
+    
     for day_element in available_days:
-        day_text = day_element.text
-        day = int(day_text)
+        day_text = day_element.get_attribute("aria-label")
+        day_date_str = day_text.split(" - ")[0]
+        day_date = datetime.strptime(day_date_str, "%d.%m.%Y")
         
-        if today <= start_day and day >= start_day:
-            return day_element
+        if not end_date or (end_date and day_date <= end_date):
+            if day_date >= start_date:
+                return day_element
 
     return None
 
@@ -75,16 +88,21 @@ def fill_and_submit_form(browser):
     email_input = browser.find_element(By.ID, "email")
     email_input.send_keys(your_email)
 
+    try:
+        phone_input = browser.find_element(By.ID, "telephone")
+        phone_input.send_keys(your_phone)
+    except:
+        pass
+
     agb_checkbox = browser.find_element(By.ID, "agbgelesen")
     browser.execute_script("arguments[0].click();", agb_checkbox)
 
-    time.sleep(10)
+    time.sleep(50)
 
     register_submit_button = browser.find_element(By.ID, "register_submit")
     browser.execute_script("arguments[0].click();", register_submit_button)
 
 def main():
-    start_day = args.start_day
     while True:
         print("Script is running...")
         result, browser = run_script()
@@ -92,12 +110,13 @@ def main():
             print("No available dates, try again...")
         else:
             print("Available appointment found.")
-            next_available_day = get_next_available_day(browser, start_day)
+            next_available_day = get_next_available_day(browser, start_date, end_date)
             if next_available_day:
                 next_available_day.click()
-                print(f"Date {start_day} or later selected.")
+                print(f"Date {start_date} or later selected.")
                 if click_first_link(browser, "frei"):
                     print("Time selected.")
+                    time.sleep(25)
                     fill_and_submit_form(browser)
                     print("Form filled in and sent.")
                     time.sleep(5)
