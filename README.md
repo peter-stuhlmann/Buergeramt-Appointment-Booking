@@ -28,7 +28,7 @@ py booking.py --name "John Doe" --email "j.doe@example.com" --phone "01234567890
 `--phone` - Enter your phone number   
 `--id` - Enter the ID of the service you want to book an appointment for, e.g. "121151" to apply for a passport.   
 To find the matching ID, click on a service at [https://service.berlin.de/dienstleistungen/](https://service.berlin.de/dienstleistungen/). The number at the end of the URL is the ID. This script is not suitable for services that can be done online.  
-`--start_date` - [optional, format "DD.MM.YYYY", default is the current date] Add the first date from which an appointment booking should be made. For example, today is August 8. Your appointment should not take place before August 12. Enter `--start_date 12` in the command to make sure that a free appointment is not booked on e.g. August 9.
+`--start_date` - [optional, format "DD.MM.YYYY", default is the current date] Add the first date from which an appointment booking should be made. For example, today is August 8. Your appointment should not take place before August 12. Enter `--start_date 12.08.2023` in the command to make sure that a free appointment is not booked on e.g. August 9.
 `--end_date` - [optional, format "DD.MM.YYYY", default is no end date] Add the last date on which an appointment booking should be made.
 
 
