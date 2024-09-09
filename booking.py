@@ -118,7 +118,6 @@ def main():
     while True:
         print("Script is running...")
         result, browser = run_script()
-        time.sleep(20)
         if result == "https://service.berlin.de/terminvereinbarung/termin/taken/":
             print("No available dates, try again...")
         else:
@@ -131,8 +130,11 @@ def main():
                     print("Time selected.")
                     time.sleep(25)
                     fill_and_submit_form(browser)
-                    print("Form filled in and sent.")
-                    time.sleep(5)
+                    print(
+                        "Form filled in and sent. Please now enter the verification code from your "
+                        "email into the field now displayed in the browser."
+                    )
+                    time.sleep(99999999)
                     break
                 else:
                     print(
@@ -142,6 +144,7 @@ def main():
                 print(
                     "No available appointment from the specified start day. A new attempt will be started."
                 )
+        time.sleep(20)
 
 
 if __name__ == "__main__":
